@@ -1,5 +1,4 @@
 # perfectcircle
-Perfect Circle App
 
 To demo the package run the Shiny App by:
 
