@@ -1,0 +1,12 @@
+Package: perfectcircle
+Type: Package
+Title: Assess the Circularity of Circles via Image Aalysis
+Version: 0.1.0
+Author: Michael Höhle
+Maintainer: Michael Höhle <hoehle@math.su.se>
+Description: Take pictures of your freehand circle and measure how perfect it is. Includes a ShinyApp to automatize the judging of the World Freehand Circle Championship.
+Depends: imager, magrittr, pryr
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.0
