@@ -106,7 +106,7 @@ ui <-  fluidPage(
              img(src="adam-lowe-Shiny-Blue-Circle.png"), #https://openclipart.org/detail/23394/shiny-blue-circle,
              HTML("</center>"),
              h2("World Championship in Freehand Circle Drawing"),
-             "Are you better than the World Champion? If you think so then provide proof by making a github pull request containing your named .jpg and .csv files to the ", a(href="https://github.com/hoehleatsu/perfectcircle/inst/extdata/", "extdata"), "github folder of the package.",
+             "Are you better than the World Champion? If you think so then provide proof by making a github pull request containing your named .jpg and .csv files to the ", a(href="https://github.com/hoehleatsu/perfectcircle/tree/master/inst/extdata", "extdata"), "github folder of the package.",
              HTML("<center>"),
              img(src="adam-lowe-Shiny-Blue-Circle.png"), #https://openclipart.org/detail/23394/shiny-blue-circle,
              HTML("</center>"),

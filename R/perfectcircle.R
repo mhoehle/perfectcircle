@@ -121,7 +121,7 @@ target_tls <- function(theta, freehandCircleThinBorder) {
 #' Helper - don't export
 my_incProgress <- function (progress, amount = 0.1, message = NULL, detail = NULL, session = getDefaultReactiveDomain()) {
   if (!is.null(progress)) {
-    progress$inc(amount=amount, message=message, detail=detail, session=session)
+    progress$inc(amount=amount, message=message, detail=detail)
   }
   invisible()
 }
@@ -157,7 +157,7 @@ my_incProgress <- function (progress, amount = 0.1, message = NULL, detail = NUL
 
 circularity <- function(warp, seedPoints, progress, verbose=FALSE) {
   ##Number of steps for the progress bar
-  nSteps <- 8
+  nSteps <- 7
   if (verbose) print(pryr::mem_used())
 
   my_incProgress(progress, 0, detail='Detecting edges...')
@@ -168,7 +168,7 @@ circularity <- function(warp, seedPoints, progress, verbose=FALSE) {
   }
   if (verbose) print(pryr::mem_used())
   #Edge detection filter sequence.
-  if (verbose) edges <- detect.edges(warp,1) %>% sqrt
+  edges <- detect.edges(warp,1) %>% sqrt
 
   ##Clean and progress
   rm(detect.edges)

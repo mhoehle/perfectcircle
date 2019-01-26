@@ -2,7 +2,7 @@
 #'
 #' @export
 runExample <- function() {
-  appDir <- system.file("shiny-examples", "perfectcircle", package = "perfectcircle")
+  appDir <- system.file("shiny-examples", package = "perfectcircle")
   if (appDir == "") {
     stop("Could not find example directory. Try re-installing `perfectcircle`.", call. = FALSE)
   }
