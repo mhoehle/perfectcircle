@@ -1,8 +1,8 @@
 # perfectcircle
 
-A packaged version of the functionality described in [Judging Freehand Circle Drawing Competitions](http://staff.math.su.se/hoehle/blog/2018/07/31/circle.html).
+A packaged version of the functionality described in the blog post [Judging Freehand Circle Drawing Competitions](http://staff.math.su.se/hoehle/blog/2018/07/31/circle.html).
 
-To demo the package run the accompanying Shiny App by:
+To demo the package run the accompanying Shiny app by:
 
     devtools::install_github("hoehleatsu/perfectcircle")
     library(perfectcircle)
