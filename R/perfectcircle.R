@@ -157,10 +157,10 @@ my_incProgress <- function (progress, amount = 0.1, message = NULL, detail = NUL
 
 circularity <- function(warp, seedPoints, progress, verbose=FALSE) {
   ##Number of steps for the progress bar
-  nSteps <- 7
+  nSteps <- 8
   if (verbose) print(pryr::mem_used())
 
-  my_incProgress(progress, 0, detail='Detecting edges...')
+  my_incProgress(progress, 1/nSteps, detail='Detecting edges...')
 
   ##Edge detection function. Sigma is the size of the blur window.
   detect.edges <- function(im, sigma=1) {
@@ -172,7 +172,7 @@ circularity <- function(warp, seedPoints, progress, verbose=FALSE) {
 
   ##Clean and progress
   rm(detect.edges)
-  print(pryr::mem_used())
+  if (verbose) print(pryr::mem_used())
 
   if (verbose) my_incProgress(progress, 1/nSteps, detail = "Priority map...")
 

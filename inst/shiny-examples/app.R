@@ -22,34 +22,83 @@ library("perfectcircle")
 
 ##Server function
 server <- function(input, output, session) {
-  getCircImg <- eventReactive(input$myFileCirc, {
-    return( input$myFileCirc$datapath )
-  })
+  ##Create reactive values
+  v <- reactiveValues(img_path = NULL, seedPoints= NULL, scaleFactor= NULL, go= FALSE)
 
-  getSeedPoints <- eventReactive(input$myFileSeedPoints, {
+  # getCircImg <- eventReactive(input$myFileCirc, {
+  #   return( input$myFileCirc$datapath )
+  # })
+  # getSeedPoints <- eventReactive(input$myFileSeedPoints, {
+  #   seedPoints <- read.csv(input$myFileSeedPoints$datapath, encoding="UTF8")
+  #   names(seedPoints) <- NULL
+  #   return(seedPoints)
+  # })
+  # getScaleFactor <- eventReactive(input$scaleFactor, {
+  #   return(input$scaleFactor)
+  # })
+  #
+  # getGoAction <- eventReactive(input$goButton, {
+  #   return(TRUE)
+  # })
+
+  observeEvent(input$myFileCirc, {
+    v$img_path <- input$myFileCirc$datapath
+  })
+  observeEvent(input$myFileSeedPoints, {
     seedPoints <- read.csv(input$myFileSeedPoints$datapath, encoding="UTF8")
     names(seedPoints) <- NULL
-    return(seedPoints)
+    v$seedPoints <- seedPoints
+  })
+  observeEvent(input$scaleFactor, {
+   v$scaleFactor <- input$scaleFactor
   })
 
+  # getGoAction <- eventReactive(input$goButton, {
+  #   return(TRUE)
+  # })
+  observeEvent(input$goButton, {
+    v$go <- input$goButton
+  })
 
-  output$result <- renderUI({
-    ##Extract seed points and image to go from.
-    seedPoints <- getSeedPoints()
-
-    ##Loading image
-    print(getCircImg())
-    img <- imager::load.image(file=getCircImg())
-    print(img)
+  output$result_producer <- renderUI({
+    ##Trigger only if there is action.
+    print(v$go)
+    if (!v$go) return()
 
     # Create a Progress object - https://shiny.rstudio.com/articles/progress.html
     progress <- shiny::Progress$new()
     # Make sure it closes when we exit this reactive, even if there's an error
     on.exit(progress$close())
-    progress$set(message = "Measuring", value = 0)
+    progress$set(message = "Measuring", detail="Scaling Image...", value = 0)
+
+    ##Extract seed points and image to go from.
+    seedPoints <- v$seedPoints #getSeedPoints()
+
+    ##Loading image
+    # #print(getCircImg())
+    # img <- imager::load.image(file=getCircImg())
+    # print(img)
+    print(v$img_path)
+    img <- imager::load.image(file=v$img_path)
+    print(img)
+
+    ##
+    scaleFactor <- v$scaleFactor
+    print(scaleFactor)
+
+    ##Scale image and coordinates
+   ## browser()
+    #img <- imager::resize(img, -getScaleFactor(), -getScaleFactor())
+    img <- imager::resize(img, -scaleFactor, -scaleFactor)
+    print(img)
+
+    print(seedPoints)
+    print(scaleFactor)
+    seedPoints[,1:2] <- as.matrix(seedPoints[,1:2]) * scaleFactor/100
+    print(seedPoints)
 
     ##Measure circularity (show progress bar if within shiny)
-    res <- circularity( img, seedPoints=getSeedPoints(), progress=progress)
+    res <- circularity( img, seedPoints=seedPoints, progress=progress)
 
     output$image_result <- renderImage({
       # Return a list containing the filename
@@ -65,11 +114,16 @@ server <- function(input, output, session) {
            alt = "Image shows the extracted circle and background")
     }, deleteFile = TRUE)
 
+    output$result <- renderUI({
+      HTML(paste0("<h2><b>",sprintf("%.2f%%",res$score),
+                   '</b></h2><font color="gray">(area ratio: ',sprintf("%.4f",res$ratio_area),")</font>"))
+    })
+
     print(res)
 
-    HTML(paste0("<h2><b>",sprintf("%.2f%%",res$score),
-                '</b></h2><font color="gray">(area ratio: ',sprintf("%.4f",res$ratio_area),")</font>"))
+    v$go <- FALSE
 
+    HTML("")
   }) #renderUI
 }
 
@@ -77,19 +131,23 @@ ui <-  fluidPage(
   # Application title
   titlePanel("The perfect circle!"),
   "By ",a(href="http://www.math.su.se/~hoehle", "M. Höhle"),
-  "based on the algorithm described in ", a(href="http://staff.math.su.se/hoehle/blog/2018/07/31/circle.html", em("Judging Freehand Circle Drawing Competitions")), ", but without the rectifcation step.",
+  "based on the algorithm described in ", a(href="http://staff.math.su.se/hoehle/blog/2018/07/31/circle.html", em("Judging Freehand Circle Drawing Competitions")), ".",
   p(),p(),
   # Show a plot of the generated distribution
   tabsetPanel(
     tabPanel("Main",
              h1(""),
              fluidRow(
-               column(4,fileInput("myFileCirc", "Choose a picture to measure circularity in", accept = c('image/png', 'image/jpeg'))),
-               column(4,fileInput("myFileSeedPoints", "Choose a CSV file containing seed points", accept = c('text/csv')))
+               column(3,fileInput("myFileCirc", "Choose a picture to measure circularity in", accept = c('image/png', 'image/jpeg'))),
+               column(3,fileInput("myFileSeedPoints", "Choose a CSV file containing seed points", accept = c('text/csv'))),
+               column(3, sliderInput("scaleFactor","Scale Factor",min=25, max=100, value=100, step = 25, post="%")),
+               column(2, fluidRow(h3("")), fluidRow(h2("")), fluidRow(actionButton("goButton", "Go!")),offset=1)
+
              ),
              hr(),
              h3("Circularity Score:"),
              htmlOutput("result"),
+             htmlOutput("result_producer"),
              hr(),
              imageOutput("image_result")
     ),#,# end tabPanel
@@ -112,7 +170,7 @@ ui <-  fluidPage(
              HTML("</center>"),
              h2("Using the Shiny App"),
              h5("Image:"),
-             "Simply select a rectified .png or .jpg image of your circle using the file selector in the shiny app. Your image should be rectified - that means parallel lines should appear as parallel lines and 90 degree angles should really be visible as 90 degree angles in the image. Such a picture can for example be obtained by placing the camera on a pod a few meters away from the center of your drawing canvas and ensure a constant lighting without reflections.  Best results are obtained if there is a large contrast between circle and background (e.g. white chalk on a clean blackboard). The more pixels the uploaded contains the longer the computations take. It can thus be a good idea to use only medium-resolution images, either by downscaling the original images or by taking the photos with a medium resolution in the first place.",
+             "Simply select a rectified .png or .jpg image of your circle using the file selector in the shiny app. Your image should be ", strong("rectified")," - that means parallel lines should appear as parallel lines and 90 degree angles should really be visible as 90 degree angles in the image. Such a picture can for example be obtained by placing the camera on a pod a few meters away from the center of your drawing canvas and ensure a constant lighting without reflections.  Best results are obtained if there is a large contrast between circle and background (e.g. white chalk on a clean blackboard). The more pixels the uploaded contains the longer the computations take. It can thus be a good idea to use only medium-resolution images, either by downscaling the original images or by taking the photos with a medium resolution in the first place.",
              p(),
              h5("Seed Points:"),
              "For the image the coordinates of at least two background and two foreground points have to be specified in a .csv file with columns x, y and type (where type is either: foreground or background). These coordinates can be found with any simple image program, e.g. MS Paint or GIMP. For example:",
