@@ -157,13 +157,13 @@ ui <-  fluidPage(
     ),
     tabPanel("Help",
              h2("The App"),
-             "The R source code of ", em("The perfect circle"), " shiny app is available as part of the R package ", em("perfectcircle"), " available from ", a(href="https://github.com/hoehleatsu/perfectcircle", "github"), "under a GPLv3 license. Please posts comments, bugs as github ", a(href="https://github.com/hoehleatsu/perfectcircle/issues"), "issues.",                                                                                                                                                                                                                                                                        HTML("</center>"),
+             "The R source code of ", em("The perfect circle"), " shiny app is available as part of the R package ", em("perfectcircle"), " available from ", a(href="https://github.com/hoehleatsu/perfectcircle", "github"), "under a GPLv3 license. Please posts comments and bugs as github ", a(href="https://github.com/hoehleatsu/perfectcircle/issues", "issues"), ".",                                                                                                                                                                                                                                                                        HTML("</center>"),
              "More information about the algorithm as well as the manual of the app can be found as part of the R package ", a(href="https://github.com/hoehleatsu/perfectcircle", em("perfectcircle")), ", e.g., on the Wiki page.",br(),
              HTML("<center>"),
              img(src="adam-lowe-Shiny-Blue-Circle.png"), #https://openclipart.org/detail/23394/shiny-blue-circle,
              HTML("</center>"),
              h2("World Championship in Freehand Circle Drawing"),
-             "Can you draw freehand circles like a World Champion? If yes, provide proof by making a github pull request containing your named .jpg and .csv files to the ", a(href="https://github.com/hoehleatsu/perfectcircle/tree/master/inst/extdata", "extdata"), "github folder of the package!",
+             "Can you draw freehand circles like a World Champion? If yes, prove it by making a github pull request containing the files [Alias].jpg and [Alias].csv files to the ", a(href="https://github.com/hoehleatsu/worldfreehandcirclechampionship/tree/master/round-1", "round-1"), " folder of the ", a(href="https://github.com/hoehleatsu/worldfreehandcirclechampionship", em("worldfreehandcirclechampionship")), "github project.",
              HTML("<center>"),
              img(src="adam-lowe-Shiny-Blue-Circle.png"), #https://openclipart.org/detail/23394/shiny-blue-circle,
              HTML("</center>"),
@@ -183,7 +183,7 @@ ui <-  fluidPage(
              "Note: UTF8 encoding is assumed for the CSV file. ",
              p(),
              h5("Result:"),
-             "Once you uploaded the two files and selected the scale factor you have to hit the 'Go!' button to start the computation. This will compute the circularity score by comparing with the perfect circle. The reported score is the ", code("(1-ratio_areadifference)*100%"), " score described in ", a(href="http://staff.math.su.se/hoehle/blog/2018/07/31/circle.html", em("Judging Freehand Circle Drawing Competitions")), ". Details of the resulting fit are shown in the 'Details' panel. This shows for example how the extraction of the circle from the backgroun worked and if, possibly, more foreground or background seed points are needed in the .csv file to get better results. It is possible to change just the .csv file, upload it again and hit 'Go!' to improve the detection sequentially.",
+             "Once you uploaded the two files and selected the scale factor you have to hit the 'Go!' button to start the computation. This will compute the circularity score by comparing with the perfect circle. The reported score is the ", code("(1-ratio_areadifference)*100%"), " score described in ", a(href="http://staff.math.su.se/hoehle/blog/2018/07/31/circle.html", em("Judging Freehand Circle Drawing Competitions")), ". Details of the resulting fit are shown in the 'Details' panel. This shows for example how the extraction of the circle from the background worked and if, possibly, more foreground or background seed points are needed in the .csv file to get better results. It is possible to change just the .csv file, upload it again and hit 'Go!' to improve the detection sequentially.",
              p()
     )
   )
