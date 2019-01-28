@@ -11,7 +11,7 @@ circularity(warp, seedPoints, progress, verbose = FALSE)
 
 \item{seedPoints}{A \code{data.frame} containing the (x, y) coordinates of \code{type=="foreground"} and \code{type=="background"} pixels.}
 
-\item{progress}{A shiny progress bar.}
+\item{progress}{A shiny progress bar. If \code{NULL} the argument is ignored. Otherwise, progress of the steps is communicated via a shiny progress bar.}
 }
 \value{
 A list containing several elements
@@ -25,8 +25,18 @@ A list containing several elements
 }
 }
 \description{
+Measure circularity of a circle in an image
+}
+\details{
 Function executes the steps described in \href{http://staff.math.su.se/hoehle/blog/2018/07/31/circle.html}{Judging Freehand Circle Drawing Competitions}.
-Note: Opposite to the description in the blog post we assume that the image is already rectified.
+Note: Opposite to the description in the blog post we assume that the image is already rectified. The steps are thus:
+1. Identify the freehand circle in the image using a watershed algorithm based on seedpoint coordinates in the image.
+2. Fit a perfect circle to the freehand circle using a total least squares (TLS) argument. The optimization occurs using \code{optim}.
+3. Calculate the distance for each pixel on the freehand circle to the fitted perfect circle.
+4. Sum of the distances.
+
+The reported score is \eqn{(1-r_{\Delta A})\cdot 100\%}{(1-r_{\delta A})·100\%} where
+\eqn{r_{\Delta A}}{r_{\Delta A}} is the sum of the distances divided by the area of the fitted perfect circle, i.e. \eqn{\pi \cdot r^2}{π · r²}.
 }
 \examples{
 img <- imager::load.image(  system.file("extdata/", "localhost.jpg", package = "perfectcircle") )
@@ -34,6 +44,7 @@ seedPoints <- read.csv( system.file("extdata", "localhost.csv", package="perfect
 res <- perfectcircle::circularity(img, seedPoints, progress=NULL)
 res
 
+#Show the resulting file
 plot(imager::load.file(res$outfile))
 }
 \references{
