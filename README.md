@@ -12,3 +12,6 @@ The [Image file](https://github.com/hoehleatsu/perfectcircle/blob/master/inst/ex
 
 Instead of installing the package one can also run the Shiny App directly from
 [http://michaelhoehle.eu/shiny/perfectcircle/](http://michaelhoehle.eu/shiny/perfectcircle/).
+
+Using the app:
+![Animated gif showing how to operate the app](tutorial.gif)
