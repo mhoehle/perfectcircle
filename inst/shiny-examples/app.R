@@ -19,48 +19,116 @@
 ##
 library("shiny")
 library("perfectcircle")
+library("ggplot2")
+library("dplyr")
 
 ##Server function
 server <- function(input, output, session) {
   ##Create reactive values
-  v <- reactiveValues(img_path = NULL, seedPoints= NULL, scaleFactor= NULL, go= FALSE)
+  v <- reactiveValues(img_path = NULL, img=NULL, img_df = NULL, file_name = NULL, seedPoints= NULL, scaleFactor= NULL, go= FALSE)
+  ##Global variable
+  seedPoints_working <<- NULL
 
-  # getCircImg <- eventReactive(input$myFileCirc, {
-  #   return( input$myFileCirc$datapath )
-  # })
-  # getSeedPoints <- eventReactive(input$myFileSeedPoints, {
-  #   seedPoints <- read.csv(input$myFileSeedPoints$datapath, encoding="UTF8")
-  #   names(seedPoints) <- NULL
-  #   return(seedPoints)
-  # })
-  # getScaleFactor <- eventReactive(input$scaleFactor, {
-  #   return(input$scaleFactor)
-  # })
-  #
-  # getGoAction <- eventReactive(input$goButton, {
-  #   return(TRUE)
-  # })
+  make_original_panel <- function() {
+    cat("Running 'make_original_panel'...\n")
+    if (is.null(v$img)) return(NULL)
+
+    v$img_df <- v$img %>% imager::resize(-v$scaleFactor, -v$scaleFactor) %>%
+      grayscale() %>% as.data.frame() %>%
+      mutate(x=x*100/v$scaleFactor, y=y*100/v$scaleFactor)
+
+    print(dim(v$img_df))
+
+    ##Render the 'original' plot.
+    output$plot_original <- renderPlot({
+      p <- ggplot(v$img_df,aes(x=x,y=y)) + geom_raster(aes(fill=value)) +
+      {if (!is.null(v$seedPoints)) geom_point( data=v$seedPoints, aes(x=x, y=y, color=type))} +
+        scale_x_continuous(expand=c(0,0)) +
+        scale_y_continuous(expand=c(0,0),trans=scales::reverse_trans()) +
+        scale_fill_gradient(low="black",high="white") +
+        coord_fixed() +
+        guides(fill=FALSE, color=FALSE)
+      p
+    })
+    invisible()
+  }
 
   observeEvent(input$myFileCirc, {
     v$img_path <- input$myFileCirc$datapath
+    v$file_name <- input$myFileCirc$name
+    print(v$file_name)
+
+    ##Loading image
+    v$img <- imager::load.image(file=v$img_path)
+    print(v$img)
+
+    ##Make original panel
+    make_original_panel()
+
+    ##Done with actions on load image
   })
+
   observeEvent(input$myFileSeedPoints, {
-    seedPoints <- read.csv(input$myFileSeedPoints$datapath, encoding="UTF8")
-    names(seedPoints) <- NULL
+    seedPoints <- read.csv(input$myFileSeedPoints$datapath, encoding="UTF8", stringsAsFactors = FALSE)
     v$seedPoints <- seedPoints
   })
   observeEvent(input$scaleFactor, {
    v$scaleFactor <- input$scaleFactor
+   ##Make original panel based on this scale factor.
+   make_original_panel()
   })
-
-  # getGoAction <- eventReactive(input$goButton, {
-  #   return(TRUE)
-  # })
   observeEvent(input$goButton, {
     v$go <- input$goButton
   })
+  observeEvent(input$resetSeedPointsButton, {
+    v$seedPoints <- NULL
+  })
+  # Downloadable csv of selected dataset ----
+  output$downloadSeedPoints <- downloadHandler(
+    filename = function() {
+     gsub("\\.jpg$","\\.csv", v$file_name)
+    },
+    content = function(file) {
+      write.csv(v$seedPoints, file, row.names = FALSE)
+    }
+  )
 
   output$result_producer <- renderUI({
+
+    output$click_info <- renderTable({
+      # Because it's a ggplot2, we don't need to supply xvar or yvar; if this
+      # were a base graphics plot, we'd need those.
+      print("Input pixeltype:")
+      print(input$pixel_type)
+      print(input$plot_click)
+
+      print("Click Action:")
+      print(input$plot_click)
+
+      if (!is.null(input$plot_click)) {
+        if (input$pixel_type %in% c("foreground", "background")) {
+          print("Seedpoints:")
+          print(v$seedPoints)
+          pts <- nearPoints(v$img_df, input$plot_click, addDist = FALSE, maxpoints=1) %>% select(x,y)
+          pts <- pts %>% mutate(type = input$pixel_type)
+          print("Points")
+          print(pts)
+          #browser()
+           if (is.null(v$seedPoints)) {
+             v$seedPoints <- pts
+           } else {
+            v$seedPoints <- full_join(v$seedPoints, pts, by=c("x","y","type"))
+          }
+        } else {
+          if (input$pixel_type %in% c("delete")) {
+            pts <- nearPoints(v$seedPoints, input$plot_click, addDist = FALSE, maxpoints=1) %>% select(x,y)
+            v$seedPoints <- anti_join(v$seedPoints, pts, by=c("x","y"))
+          }
+        }
+      }
+      return(v$seedPoints)
+    })
+
     ##Trigger only if there is action.
     print(v$go)
     if (!v$go) return()
@@ -71,27 +139,14 @@ server <- function(input, output, session) {
     on.exit(progress$close())
     progress$set(message = "Measuring", detail="Scaling Image...", value = 0)
 
-    ##Extract seed points and image to go from.
-    seedPoints <- v$seedPoints #getSeedPoints()
-
-    ##Loading image
-    # #print(getCircImg())
-    # img <- imager::load.image(file=getCircImg())
-    # print(img)
-    print(v$img_path)
-    img <- imager::load.image(file=v$img_path)
-    print(img)
-
-    ##
+    ##Extract seed points and scale factor.
+    seedPoints <- v$seedPoints
     scaleFactor <- v$scaleFactor
     print(scaleFactor)
 
     ##Scale image and coordinates
-   ## browser()
-    #img <- imager::resize(img, -getScaleFactor(), -getScaleFactor())
-    img <- imager::resize(img, -scaleFactor, -scaleFactor)
+    img <- imager::resize(v$img, -scaleFactor, -scaleFactor)
     print(img)
-
     print(seedPoints)
     print(scaleFactor)
     seedPoints[,1:2] <- as.matrix(seedPoints[,1:2]) * scaleFactor/100
@@ -151,7 +206,17 @@ ui <-  fluidPage(
              hr(),
              imageOutput("image_result")
     ),#,# end tabPanel
-    tabPanel("Details",
+    tabPanel("Seed points",
+             plotOutput("plot_original", click = clickOpts("plot_click")),
+             radioButtons("pixel_type", "Action on click:",
+                          c("Add circle point" = "foreground",
+                            "Add background point" = "background",
+                            "Delete point" = "delete"), inline=TRUE),
+             fluidRow(column(3, h4("Seed points:")), column(2, actionButton("resetSeedPointsButton", "Reset")), column(2,downloadButton("downloadSeedPoints", "Download"))),
+             #verbatimTextOutput("click_info")
+             tableOutput("click_info")
+    ),
+    tabPanel("Fit Details",
              imageOutput("image_details"),
              "Note: Both images are shown at a 25% scale of the size used in the calculations."
     ),
