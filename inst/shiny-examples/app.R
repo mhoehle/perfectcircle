@@ -95,6 +95,7 @@ server <- function(input, output, session) {
 
   output$result_producer <- renderUI({
 
+    ##Click action
     output$click_info <- renderTable({
       # Because it's a ggplot2, we don't need to supply xvar or yvar; if this
       # were a base graphics plot, we'd need those.
@@ -131,7 +132,11 @@ server <- function(input, output, session) {
 
     ##Trigger only if there is action.
     print(v$go)
+
+    #browser()
+
     if (!v$go) return()
+    if (is.null(v$seedPoints) || nrow(v$seedPoints) == 0) return(simpleError(message="Problem! No seedpoints."))
 
     # Create a Progress object - https://shiny.rstudio.com/articles/progress.html
     progress <- shiny::Progress$new()
@@ -193,8 +198,8 @@ ui <-  fluidPage(
     tabPanel("Main",
              h1(""),
              fluidRow(
-               column(3,fileInput("myFileCirc", "Choose a picture to measure circularity in", accept = c('image/png', 'image/jpeg'))),
-               column(3,fileInput("myFileSeedPoints", "Choose a CSV file containing seed points", accept = c('text/csv'))),
+               column(4,fileInput("myFileCirc", "Select image to analyse:", accept = c('image/png', 'image/jpeg'))),
+               #column(3,fileInput("myFileSeedPoints", "Choose a CSV file containing seed points", accept = c('text/csv'))),
                column(3, sliderInput("scaleFactor","Scale Factor",min=25, max=100, value=100, step = 25, post="%")),
                column(2, fluidRow(h3("")), fluidRow(h2("")), fluidRow(actionButton("goButton", "Go!")),offset=1)
 
@@ -212,7 +217,14 @@ ui <-  fluidPage(
                           c("Add circle point" = "foreground",
                             "Add background point" = "background",
                             "Delete point" = "delete"), inline=TRUE),
-             fluidRow(column(3, h4("Seed points:")), column(2, actionButton("resetSeedPointsButton", "Reset")), column(2,downloadButton("downloadSeedPoints", "Download"))),
+             hr(),
+             fluidRow(
+               column(4, fileInput("myFileSeedPoints", "Upload:", accept = c('text/csv'))),
+               column(2, h1(""), actionButton("resetSeedPointsButton", "Reset")),
+               column(2, h1(""), downloadButton("downloadSeedPoints", "Download"))
+             ),
+             hr(),
+             "The points:",
              #verbatimTextOutput("click_info")
              tableOutput("click_info")
     ),
@@ -237,7 +249,7 @@ ui <-  fluidPage(
              "Select a rectified .jpg image of your circle using the file selector of the shiny app. Your image should be ", strong("rectified")," - that means parallel lines should appear as parallel lines and 90 degree angles should display as 90 degree angles in the image. Such a picture can for example be obtained by placing the camera on a pod a few meters away from the center of your drawing canvas and on the line of an orthogonal vector from this center. Also ensure a constant lighting without reflections.  Best results are obtained if there is a large contrast between circle and background, e.g., white chalk on a clean blackboard or black edding on a whiteboard. Note: The more pixels the uploaded contains the longer the computations take. It can thus be a good idea to use the ", em("scale factor"), " slider to reduce the resolution in order to speed up the computations. Warning: Results for an image may vary slightly based on the selected scale factor. If one wants to compare the score of several different circles one should compare the scores at the same scaling.",
              p(),
              h5("Seed Points:"),
-             "For the image the coordinates of at least two background and two foreground points have to be specified in a .csv file with columns 'x', 'y' and 'type' (where type is either: foreground or background). These coordinates can be found with any simple image program, e.g. MS Paint or GIMP, or directly in R using the locator function. An example of the required .csv file is:",
+             "For the image the coordinates of at least two background and at least one foreground points have to be specified: For the background points at least one has to be placed inside the circle and at least one outside the circle. The seedpoints are specified in the 'Seed points' tab bei either clicking in the image (choosing the appropriate 'click action') or by uploading a .csv file with columns 'x', 'y' and 'type' (where type is either: foreground or background). The later allows the user to find the coordinates using her favorite image analysis program, e.g., Gimp or MS paint or directly in R using the 'locator' function. An example of such a .csv file is:",
              p(),
              em("x,y,type"), br(),
              em("1304,1368,background"), br(),
@@ -245,10 +257,10 @@ ui <-  fluidPage(
              em("304,1304,foreground"), br(),
              em("2384,1304,foreground"),
              p(),
-             "Note: UTF8 encoding is assumed for the CSV file. ",
+             "It is possible to download the current selection of seed points as a .csv file (select: 'Download') in order to speed up the process a second time or to batch process an entire stack of images directly in R. Note: Displaying the image might take a little while, if the resolution is high. It can be beneficial to use a scale factor of 25% or lower in the main tab, because the image displayed is shown using the scale factor also and, hence, is faster.",
              p(),
              h5("Result:"),
-             "Once you uploaded the two files and selected the scale factor you have to hit the 'Go!' button to start the computation. This will compute the circularity score by comparing with the perfect circle. The reported score is the ", code("(1-ratio_areadifference)*100%"), " score described in ", a(href="http://staff.math.su.se/hoehle/blog/2018/07/31/circle.html", em("Judging Freehand Circle Drawing Competitions")), ". Details of the resulting fit are shown in the 'Details' panel. This shows for example how the extraction of the circle from the background worked and if, possibly, more foreground or background seed points are needed in the .csv file to get better results. It is possible to change just the .csv file, upload it again and hit 'Go!' to improve the detection sequentially.",
+             "Once you uploaded the two files and selected the scale factor you have to hit the 'Go!' button to start the computation. This will compute the circularity score by comparing with the perfect circle. The reported score is the ", code("(1-ratio_areadifference)*100%"), " score described in ", a(href="http://staff.math.su.se/hoehle/blog/2018/07/31/circle.html", em("Judging Freehand Circle Drawing Competitions")), ". Details of the resulting fit are shown in the 'Fit Details' panel. This shows for example how the extraction of the circle from the background worked and if, possibly, more foreground or background seed points are needed to get better results. It is possible to change just the seed points and hit 'Go!' in order to improve the detection sequentially.",
              p()
     )
   )
