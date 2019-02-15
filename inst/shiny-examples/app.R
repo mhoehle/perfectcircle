@@ -200,7 +200,7 @@ ui <-  fluidPage(
              fluidRow(
                column(4,fileInput("myFileCirc", "Select image to analyse:", accept = c('image/png', 'image/jpeg'))),
                #column(3,fileInput("myFileSeedPoints", "Choose a CSV file containing seed points", accept = c('text/csv'))),
-               column(3, sliderInput("scaleFactor","Scale Factor",min=25, max=100, value=100, step = 25, post="%")),
+               column(3, sliderInput("scaleFactor","Scale Factor",min=10, max=100, value=100, step = 10, post="%")),
                column(2, fluidRow(h3("")), fluidRow(h2("")), fluidRow(actionButton("goButton", "Go!")),offset=1)
 
              ),
