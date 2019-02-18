@@ -235,7 +235,7 @@ ui <-  fluidPage(
     tabPanel("Help",
              h2("The App"),
              "The R source code of ", em("The perfect circle"), " shiny app is available as part of the R package ", em("perfectcircle"), " available from ", a(href="https://github.com/hoehleatsu/perfectcircle", "github"), "under a GPLv3 license. Please posts comments and bugs as github ", a(href="https://github.com/hoehleatsu/perfectcircle/issues", "issues"), ".",                                                                                                                                                                                                                                                                        HTML("</center>"),
-             "More information about the algorithm as well as the manual of the app can be found as part of the R package ", a(href="https://github.com/hoehleatsu/perfectcircle", em("perfectcircle")), ", e.g., on the Wiki page.",br(),
+             "More information about the algorithm as well as the manual of the app can be found as part of the R package ", a(href="https://github.com/hoehleatsu/perfectcircle", em("perfectcircle")), ", e.g., on the Wiki page. Furthermore, two video tutorials of the shiny app are described in the blog post ", a(href="http://staff.math.su.se/hoehle/blog/2019/02/15/shinycircle.html", "A Shiny app for your perfect circle"), ".", br(),
              HTML("<center>"),
              img(src="adam-lowe-Shiny-Blue-Circle.png"), #https://openclipart.org/detail/23394/shiny-blue-circle,
              HTML("</center>"),
