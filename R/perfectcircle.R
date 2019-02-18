@@ -319,6 +319,10 @@ circularity <- function(warp, seedPoints, progress, verbose=FALSE) {
   my_incProgress(progress, 1/nSteps, detail = "Done!")
   if (verbose) print(pryr::mem_used())
 
+  ##Sanity check - ratio of area difference only makes sense if there is any
+  ##sensible area of the ideal disc.
+  score <- if (ratio_area < 0.05) { 0 } else { (1-ratio_areadifference)*100}
+
   ##Done
   res <- list(
     outfile=outfile,
@@ -327,7 +331,7 @@ circularity <- function(warp, seedPoints, progress, verbose=FALSE) {
     ratio_area=ratio_area,
     area_difference=area_difference,
     ratio_areadifference=ratio_areadifference,
-    score=(1-ratio_areadifference)*100
+    score=score
   )
 
   ##Done
