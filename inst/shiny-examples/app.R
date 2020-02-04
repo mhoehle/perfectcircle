@@ -86,7 +86,7 @@ server <- function(input, output, session) {
   # Downloadable csv of selected dataset ----
   output$downloadSeedPoints <- downloadHandler(
     filename = function() {
-     gsub("\\.jpg$","\\.csv", v$file_name)
+     gsub("(\\.jpg|\\.jpeg|\\.png)$","\\.csv", v$file_name)
     },
     content = function(file) {
       write.csv(v$seedPoints, file, row.names = FALSE)
@@ -163,14 +163,14 @@ server <- function(input, output, session) {
     output$image_result <- renderImage({
       # Return a list containing the filename
       list(src = res$outfile,
-           contentType = 'image/jpg',
+           contentType = 'image/jpeg',
            alt = "Image shows the extracted freehand circle contrasted to the perfect circle fitted to the points")
     }, deleteFile = TRUE)
 
     output$image_details <- renderImage({
       # Return a list containing the filename
       list(src = res$outfile_intermediate,
-           contentType = 'image/jpg',
+           contentType = 'image/jpeg',
            alt = "Image shows the extracted circle and background")
     }, deleteFile = TRUE)
 
@@ -190,15 +190,15 @@ server <- function(input, output, session) {
 ui <-  fluidPage(
   # Application title
   titlePanel("The perfect circle!"),
-  "By ",a(href="http://www.math.su.se/~hoehle", "M. Höhle"),
-  "based on the algorithm described in ", a(href="http://staff.math.su.se/hoehle/blog/2018/07/31/circle.html", em("Judging Freehand Circle Drawing Competitions")), ".",
+  "By ",a(href="https://www.math.su.se/~hoehle", "M. Höhle"),
+  "based on the algorithm described in ", a(href="https://staff.math.su.se/hoehle/blog/2018/07/31/circle.html", em("Judging Freehand Circle Drawing Competitions")), ".",
   p(),p(),
   # Show a plot of the generated distribution
   tabsetPanel(
     tabPanel("Main",
              h1(""),
              fluidRow(
-               column(4,fileInput("myFileCirc", "Select image to analyse:", accept = c('image/png', 'image/jpeg'))),
+               column(4,fileInput("myFileCirc", "Select image to analyse:", accept = c('image/png', 'image/jpeg', 'image/jpg'))),
                #column(3,fileInput("myFileSeedPoints", "Choose a CSV file containing seed points", accept = c('text/csv'))),
                column(3, sliderInput("scaleFactor","Scale Factor",min=10, max=100, value=100, step = 10, post="%")),
                column(2, fluidRow(h3("")), fluidRow(h2("")), fluidRow(actionButton("goButton", "Go!")),offset=1)

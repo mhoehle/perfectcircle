@@ -5,8 +5,13 @@
 \title{Helper function to rectify an image - currently not used
 since points have to be transmitted.}
 \usage{
-my_incProgress(progress, amount = 0.1, message = NULL, detail = NULL,
-  session = getDefaultReactiveDomain())
+my_incProgress(
+  progress,
+  amount = 0.1,
+  message = NULL,
+  detail = NULL,
+  session = getDefaultReactiveDomain()
+)
 }
 \arguments{
 \item{img}{An image}

@@ -18,7 +18,7 @@ img_list <- list.files( path=system.file("extdata", package="perfectcircle"), pa
 
 ##Compute the circularity scores for the entire batch of jpg files located in a certain directory.
 leaderboard <- map_df(img_list, ~ {
-   cat("Processing: ", .x, "\\n")
+   cat("Processing: ", .x, "\n")
    #Load image and coordinates
    file_path <- system.file("extdata", .x, package="perfectcircle")
    img <- imager::load.image(file_path)
